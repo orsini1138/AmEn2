@@ -140,8 +140,9 @@ class shopkeeper():
     ___________________________
     ''')]
 
-    messages = ['Hey there traveller!', 'What can I do for you?']
-
+    #messages = ['Hey there traveller!', 'What can I do for you?']
+    messages = ['Fuck you!', 'You\'re gonna die now!', 'I\'m thirstin for blood!']
+        
 
 class anne():
     face = [('''

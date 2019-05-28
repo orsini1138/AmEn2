@@ -1,4 +1,4 @@
-from maps import maps
+from maps import gamePlayMaps
 from testData import mapData
 
 ## THIS is the map change chunk that is run when players enter a door. 
@@ -7,40 +7,38 @@ from testData import mapData
 ## be good idea to figure out asap
 def changeMap(scr, pl_inp):
 
-    # mapList = [maps.map1, maps.map2]
-
     ## Map1 ##
     # to map2
-    if scr == maps.map1 and pl_inp == 'w':
+    if scr == gamePlayMaps.map1 and pl_inp == 'd':
         mapData.pos_x = 2
-        mapData.pos_y = 1
-        return maps.map2
+        mapData.pos_y = 6
+        return gamePlayMaps.map2
     
     ## Map 2 ##
     # to map1
-    elif scr == maps.map2 and pl_inp == 'a':
-        mapData.pos_x = 6
-        mapData.pos_y = 14
-        return maps.map1
+    elif scr == gamePlayMaps.map2 and pl_inp == 'a':
+        mapData.pos_x = 2
+        mapData.pos_y = 7
+        return gamePlayMaps.map1
     # to map3
-    elif scr == maps.map2 and pl_inp == 's':
+    elif scr == gamePlayMaps.map2 and pl_inp == 's':
         mapData.pos_x = 1
         mapData.pos_y = 5
-        return maps.map3
+        return gamePlayMaps.map3
     
     ## Map3 ##
     # to map2
-    elif scr == maps.map3 and pl_inp == 'w':
+    elif scr == gamePlayMaps.map3 and pl_inp == 'w':
         mapData.pos_x = 4
         mapData.pos_y = 5
-        return maps.map2
+        return gamePlayMaps.map2
     # to secret room3
-    elif scr == maps.map3 and pl_inp == 'a':
+    elif scr == gamePlayMaps.map3 and pl_inp == 'a':
         mapData.pos_x = 1
         mapData.pos_y = 7
-        return maps.map3secret
+        return gamePlayMaps.map3secret
     # map3secret to return
-    elif scr == maps.map3secret and pl_inp == 'd':
+    elif scr == gamePlayMaps.map3secret and pl_inp == 'd':
         mapData.pos_x = 1
         mapData.pos_y = 1
-        return maps.map3
+        return gamePlayMaps.map3
