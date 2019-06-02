@@ -1,5 +1,5 @@
 from maps import gamePlayMaps
-from testData import mapData
+from data import mapData
 
 ## THIS is the map change chunk that is run when players enter a door. 
 ## Obviously doing this much hardcoding of states and whatnot is not
