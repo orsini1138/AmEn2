@@ -33,7 +33,7 @@ class mapData():
 
 class playerData():
     
-    HP = 30
+    HP = 3
     MAX_HP = 30
 
     GOLD = 15

@@ -7,6 +7,7 @@
 from msvcrt import getch
 import sys
 import os
+import socket
 import textwrap
 import random
 import ast
@@ -23,7 +24,7 @@ from mapChange import changeMap
 import subprocess
 
 ## Runs game opening text of story and controls
-import open_text
+#import open_text
 
 
 
@@ -179,9 +180,9 @@ def map_commands(cmd, cur_map):
     elif cmd == '\x1b':
         clear()
         print('\n\n  > EXIT? [ENTER] TO CONFIRM')
-        confirmation = getch()
+        confirmation = bytes.decode(getch())
 
-        if bytes.decode(confirmation) == '\r':
+        if confirmation == '\r':
             sys.exit(0)
         else:
             pass
@@ -245,7 +246,7 @@ def console_commands(cmd, cur_map):
         globalStates.won_gold = won_gold
 
 
-    ## TODO IMPLEMENT SOCKET MULTIPLAYER
+    ## goto SOCKET MULTIPLAYER
     elif cmd == '2':  
         globalStates.current_map = staticMaps.multiplayer_menu
         globalStates.current_commands = multiplayer_lobby_commands
@@ -362,13 +363,16 @@ def multiplayer_lobby_commands(cmd, cur_map):
         ## try to validate port and connect
         else:
             clear()
-            clientData.PORT = int(port)
-
             connected = False
             
+            HOST = '127.0.0.1'
+            
+            clientData.PORT = int(port)
+            CLIENT = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
             ## Attempt connection. If refused or failed to connect, report to player
             try:
-                clientData.client_connect(clientData.HOST, clientData.PORT)
+                CLIENT.connect((HOST, int(port)))
                 connected = True
 
             except ConnectionRefusedError:
@@ -377,15 +381,28 @@ def multiplayer_lobby_commands(cmd, cur_map):
                 getch()
             
             if connected:
-                
                 ## assign player variables to vars in client data
                 clientData.PL_HP = playerData.HP
                 clientData.PL_MAX_HP = playerData.MAX_HP
                 clientData.PL_DAM = playerData.CANNON_DAM
                 clientData.PL_MISSILES = playerData.MISSILES
                 clientData.PL_REPAIRKITS = playerData.REPAIRKITS
+                
+                ## Connect to server and send player stats
+                try:
+                    clientData.client_connect(CLIENT)
+                    clientData.send_stats(CLIENT)
+                except ConnectionResetError:
+                    print('\n\t>> CONNECTION LOST\n\t>> SERVER MAY HAVE CRASHED OR BEEN CLOSED')
+                    getch()
+                    return
 
-                print('da game stuff goes hear')
+                ## run game loop
+                loot_plus = clientData.main_loop(CLIENT)
+
+                ## Get loot
+                playerData.GOLD += loot_plus
+
                 getch()
 
         ## run client commands, let client.py take over here
@@ -522,6 +539,7 @@ def enemyTurn():
 
     if playerData.HP <= 0:
         clear()
+        ## Change lol
         print('\n\n\n\tYOU HAVE DIED\n\n\tsucks to fuckin suck fuckeroni')
         getch()
         sys.exit()
@@ -561,8 +579,7 @@ def save_game():
         i +=1
     print('\n    ['+str(i)+'] Back')
 
-    fileinp = getch()
-    fileChoice = bytes.decode(fileinp)
+    fileChoice = bytes.decode(getch())
 
     ## Name new save file
     invalidChars = ['?', '\\', '/', ':', '"', '<', '>', '*']
@@ -634,8 +651,7 @@ def load_game():
 
     print('\n    ['+str(i)+'] BACK')
     
-    file_input = getch()
-    file_choice = bytes.decode(file_input)
+    file_choice = bytes.decode(getch())
 
     if file_choice == str(i):
         return
@@ -758,18 +774,11 @@ def Main():
 
     
         ## Get the ol player input key
-        player_input = getch()
+        player_input = bytes.decode(getch())
 
         ## Run input through the current commands to get results
-        returnAction = current_command(bytes.decode(player_input), current_screen)
-        
-        ## If player has entered new room, the movement command is sent to changeMap in MapChange.py
-        ## where it takes the input to know which door the player is moving through and which room 
-        ## they're in, thus calculating which room to move to. Below returns the map to the current map.
-        # if returnAction:
-        #     globalStates.current_map = changeMap(current_screen, bytes.decode(player_input))
-
-
+        returnAction = current_command(player_input, current_screen)
+    
 
 
 ## Assign player commands at runtime
