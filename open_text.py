@@ -1,6 +1,33 @@
-import os
+import os, sys, time
+from msvcrt import getch
 
-os.system('cls')
+def clear():
+    os.system('cls')
+
+clear()
+
+title_crawl = '''
+     ##### #########   ####    #######   #######   ###  ###     ########## #########
+    ###### #########  ######   ########  ########  ###  ###     ########## #########
+    ##        ###    ###  ###  ###   ### ###   ### ###  ###     ###    ###    ###
+    ######    ###    ###  ###  ###   ### ###   ### ###  ###     ###    ###    ###
+    ######    ###    ########  ########  ########  ###  ###     ###    ###    ###
+        ##    ###    ########  #######   #######   ###  ###     ###    ###    ###
+    ######    ###    ###  ###  ###  ###  ###       ###  ####### ##########    ###
+    #####     ###    ###  ###  ###   ### ###       ###  ####### ##########    ###
+'''
+
+for x in range (len(title_crawl)):
+    print(title_crawl[x], end='')
+    sys.stdout.flush()
+    time.sleep(.005)
+
+print('\n\t\t\t## SPACE COMBAT ADVENTURES ##\n\t\t\t        [press any key]')
+
+getch()
+
+clear()
+
 print('''
         ====== WELCOME ======
 
@@ -17,8 +44,8 @@ print('''
            Godspeed, pilot.
 ''')
 
-input()
-os.system('cls')
+getch()
+clear()
 
 print('''
        ====== INSTRUCTIONS ======
@@ -34,10 +61,11 @@ print('''
     You can save and load your game through
     the pilots command station in the cockpit.
 
-    - WASD to move
-    - ESC to exit
+          - WASD to move
+          - ESC to exit
+          - 1-5 num keys for selecting
 
 
 ''')
 
-input()
+getch()

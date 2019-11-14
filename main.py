@@ -1,8 +1,10 @@
 # test.py - a test build of a new and improved terminal RPG engine
 '''
     Implement TODO:
-        -local multiplayer combat
-        - change the face/text for each combatant with their name and message.
+        -local multiplayer combat isn't working. Sockets are hard, who knew?
+         Probably won't get finished since it's a huge hassle for such little
+         return but it was close! It worked locally at least, so that's cool. 
+         I'll probably keep the local element just for demonstration purposes.
 '''
 from msvcrt import getch
 import sys
@@ -23,8 +25,10 @@ from maps import staticMaps
 from mapChange import changeMap
 import subprocess
 
+
+
 ## Runs game opening text of story and controls
-#import open_text
+import open_text
 
 
 
@@ -215,23 +219,28 @@ def console_commands(cmd, cur_map):
     ## Combat
     if cmd == '1':  
 
-        ## initialize enemy to fight ##
+        ### initialize enemy to fight ###
         ## Random rank var
         rank = random.choice(enemyData.ranks)
+        
         ## Random name var
         name = random.choice(enemyData.names)
+
 
         ## randomize hp and basedam 
         ## These are calculated based on the players current stat level
         ## --prone to tweaking, balance is still in progress
         en_hp = random.randint(int(round(playerData.STATS / 5)), int(round(playerData.STATS / 2.5))) + 6
         en_basedam = random.randint(int(round(playerData.STATS / 25)), int(round(playerData.STATS / 18)))
+        
         ## if the base damage is rounded down to 0, set to 1- enemeies need to always do damage
         if en_basedam < 1:
             en_basedam = 1
 
+        
         ## initialize randomized enemy instance, assign its above info and add the face and messages
         enemyData.current_enemy = enemyClass(rank, name, en_hp, en_basedam, faces.shopkeeper.face, faces.shopkeeper.messages)
+        
         ## enemy speaks before combat
         dialoguePrompt(enemyData.current_enemy.face, enemyData.current_enemy.messages)
 
@@ -381,6 +390,7 @@ def multiplayer_lobby_commands(cmd, cur_map):
                 getch()
             
             if connected:
+                
                 ## assign player variables to vars in client data
                 clientData.PL_HP = playerData.HP
                 clientData.PL_MAX_HP = playerData.MAX_HP
@@ -392,6 +402,7 @@ def multiplayer_lobby_commands(cmd, cur_map):
                 try:
                     clientData.client_connect(CLIENT)
                     clientData.send_stats(CLIENT)
+
                 except ConnectionResetError:
                     print('\n\t>> CONNECTION LOST\n\t>> SERVER MAY HAVE CRASHED OR BEEN CLOSED')
                     getch()
@@ -407,8 +418,10 @@ def multiplayer_lobby_commands(cmd, cur_map):
 
         ## run client commands, let client.py take over here
 
-    ## RUN SERVER
+
+    ## RUN SERVER ##
     elif cmd == '2':
+
         clear()
 
         ## print port data and help
@@ -449,52 +462,134 @@ def combat_commands(cmd, cur_map):
 
     turn_completed = False
 
-    ## Cannon
+    ## generate random number for critical roll. If 1, player misses attack. If 20, player does heavier critical attack
+    critical_generator = random.randint(1,20)
+
+    ## Cannon ##
     if cmd == '1':
-        damage = random.randint(playerData.CANNON_DAM, playerData.CANNON_DAM + 4)
-        enemyData.current_enemy.hp -= damage
-        if enemyData.current_enemy.hp < 0:
-            enemyData.current_enemy.hp = 0
 
-        clear()
-        print_combat_screen(1)
-        print(f'\n\tCannon does {str(damage)} dam')
-        getch()
+        if critical_generator == 1:
 
+            clear()
+            print_combat_screen(1)
+            print(f'\n\tYour Attack MISSES')
+            getch()
+
+        elif critical_generator == 20:
+            
+            ## Generate random critical damage amount from 1.5x player cannondam to 2x
+            crit_damage = random.randint(int(round(playerData.CANNON_DAM * 1.5)), int(round(playerData.CANNON_DAM * 2.5))) + random.randint(1,4)
+
+            ## Remove damage amt from enemy HP
+            enemyData.current_enemy.hp -= crit_damage
+
+            # Check if enemy health is less than 0, and set it to 0 if so- no Negative HP on screen!
+            if enemyData.current_enemy.hp < 0:
+                enemyData.current_enemy.hp = 0
+
+            clear()
+
+            # Update screen with damage results
+            print_combat_screen(1)
+            print(f'\n\tCritical Cannon hit for {str(crit_damage)} dam!')
+            getch()
+
+        else:
+            # Generate randomized damage number from player base damage and a +4 upper range
+            damage = random.randint(playerData.CANNON_DAM, playerData.CANNON_DAM + 4)
+
+            # Remove damage number from enemy HP
+            enemyData.current_enemy.hp -= damage
+
+            # Check if enemy health is less than 0, and set it to 0 if so- no Negative HP on screen!
+            if enemyData.current_enemy.hp < 0:
+                enemyData.current_enemy.hp = 0
+
+            clear()
+
+            # Update screen with damage results
+            print_combat_screen(1)
+            print(f'\n\tCannon does {str(damage)} dam')
+            getch()
+
+        # Continue to enemy turn
         turn_completed = True
 
-    ## Missiles
+
+    ## Missiles ##
     elif cmd == '2':
+
+        # Use missile if avaliable
         if playerData.MISSILES > 0:
+            
             ## subtract missile from inventory
             playerData.MISSILES -= 1
 
-            ## calculate enemy damage and enact it
-            damage = random.randint(playerData.CANNON_DAM + 4, playerData.CANNON_DAM + 9)
-            enemyData.current_enemy.hp -= damage
-            if enemyData.current_enemy.hp < 0:
-                enemyData.current_enemy.hp = 0
-        
-            ## Print damage report
-            clear()
-            print_combat_screen(1)
-            print(f'\n\tMissile does {str(damage)} dam')
-            getch()
 
+            if critical_generator == 1:
+
+                print_combat_screen(1)
+                print(f'\n\tYour Missile MISSES')
+                getch()
+
+            elif critical_generator == 20:
+            
+                ## Generate random critical damage amount from 1.5x player cannondam to 2x
+                crit_damage = random.randint(int(round(playerData.CANNON_DAM * 2.5)), int(round(playerData.CANNON_DAM * 4.5))) + random.randint(3,8)
+
+                ## Remove damage amt from enemy HP
+                enemyData.current_enemy.hp -= crit_damage
+
+                # Check if enemy health is less than 0, and set it to 0 if so- no Negative HP on screen!
+                if enemyData.current_enemy.hp < 0:
+                    enemyData.current_enemy.hp = 0
+
+                clear()
+
+                # Update screen with damage results
+                print_combat_screen(1)
+                print(f'\n\tCritical Missile hit for {str(crit_damage)} dam!')
+                getch()
+            
+            else:
+                ## Generate random number. Missile damage starts at +4 player basedamage and goes up to +9 added. Powerful shit.
+                damage = random.randint(playerData.CANNON_DAM + 4, playerData.CANNON_DAM + 9)
+
+                # Subtract missile damage from enemy HP
+                enemyData.current_enemy.hp -= damage
+
+                # No negative HP on screen.
+                if enemyData.current_enemy.hp < 0:
+                    enemyData.current_enemy.hp = 0
+        
+                clear()
+
+                ## Print damage report to screen
+                print_combat_screen(1)
+                print(f'\n\tMissile does {str(damage)} dam')
+                getch()
+
+            # Continue to enemy turn
             turn_completed = True
         
+        # Otherwise, too bad sonnyboy.
         else:
             print('\t**  NO MISSILES  **')
             getch()
 
-    ## Repair
+
+    ## Repair ##
     elif cmd == '3':
+
+        # Check for repairkit in inventory and that your health isn't maxed already.
         if playerData.REPAIRKITS > 0 and playerData.HP == playerData.MAX_HP:
             print('\t**  HEALTH MAXIMUM  **')
             getch()
 
+        # Otherwise, go through with repair-
         elif playerData.REPAIRKITS > 0:
             
+            # Remove RKit from inventory
             playerData.REPAIRKITS -= 1
 
             ## calculate repairkit amount
@@ -503,15 +598,21 @@ def combat_commands(cmd, cur_map):
             ## If player health plus repairkit is more than their max hp, just make it equal max hp
             if (playerData.HP + repair_amount) > playerData.MAX_HP:
                 playerData.HP = playerData.MAX_HP
+            
+            ## Otherwise add the repair amount to their HP
             else:
                 playerData.HP += repair_amount
 
             clear()
+
+            ## Update screen with repair data 
             print_combat_screen(1)
             print(f'\n\tShip Repaired +{str(repair_amount)} hp')
             getch()
-
+            
+            ## End Turn
             turn_completed = True
+
         else:
             print('\t**  NO REPAIRKITS  **')
             getch()
@@ -519,24 +620,58 @@ def combat_commands(cmd, cur_map):
     else:
         pass
 
+    ## Once turn is completed and the enemy isn't dead, go to enemy turn
     if turn_completed and enemyData.current_enemy.hp > 0:
         enemyTurn()
 
 
 def enemyTurn():
+
     clear()
 
-    ##Damage range for enemy based on their base damage
-    player_dam = random.randint(enemyData.current_enemy.basedam, enemyData.current_enemy.basedam + 3)
-    playerData.HP -= player_dam
+    ## Generate critical chances
+    critical_generator = random.randint(1,17)
 
-    if playerData.HP < 0:
-        playerData.HP = 0
+    ## Check for miss or crit hit
+    if critical_generator == 1:
+        print_combat_screen(2)
+        print(f'\n\t{enemyData.current_enemy.name} MISSES!')
+        getch()
     
-    print_combat_screen(2)
-    print(f'\n\t{enemyData.current_enemy.name} attacks for -{str(player_dam)} dam')
-    getch()
+    elif critical_generator == 2:
 
+        crit_damage = random.randint(int(round(enemyData.current_enemy.basedam * 1.5)), int(round(enemyData.current_enemy.basedam * 2.5))) + 3
+
+        ## Remove damage amount from player HP
+        playerData.HP -= crit_damage
+
+        ## No negative HP on screen
+        if playerData.HP < 0:
+            playerData.HP = 0
+    
+        ## Update screen with damage results
+        print_combat_screen(2)
+        print(f'\n\t{enemyData.current_enemy.name} CRITICALLY attacks for -{str(crit_damage)} dam')
+        getch()
+
+    else:
+
+        ## Damage range for enemy based on their base damage with a +3 range
+        player_dam = random.randint(enemyData.current_enemy.basedam, enemyData.current_enemy.basedam + 3)
+    
+        ## Remove damage amount from player HP
+        playerData.HP -= player_dam
+
+        ## No negative HP on screen
+        if playerData.HP < 0:
+            playerData.HP = 0
+    
+        ## Update screen with damage results
+        print_combat_screen(2)
+        print(f'\n\t{enemyData.current_enemy.name} attacks for -{str(player_dam)} dam')
+        getch()
+
+    ## Death screen if killed. If you see this stuff in game, do better next time I guess.
     if playerData.HP <= 0:
         clear()
         ## Change lol

@@ -16,9 +16,6 @@ class mapData():
     upgrade_console_positions = [(10,5),(12,5),(10,7),(11, 7),(12,7)]
 
 
-    #enemies = ['@']
-    #friendlies = ['Q', 'M']
-        
     # all maps are saved in order here for saving and loading purposes
     # You don't even need to keep track of the order here lol like literally
     # just make sure to add each map and you're good, the save and load 
@@ -33,12 +30,21 @@ class mapData():
 
 class playerData():
     
-    HP = 3
+    ## STARTING DEFAULTS:
+    #  -HP:      5
+    #  -MAX:     30
+    #  -GOLD:    10
+    #  -MISS:    1
+    #  -RPKIT:   1
+    #  -CANDAM:  1
+    #  -STATS:   0
+    
+    HP = 5
     MAX_HP = 30
 
-    GOLD = 15
-    MISSILES = 5
-    REPAIRKITS = 2
+    GOLD = 10
+    MISSILES = 1
+    REPAIRKITS = 1
 
     CANNON_DAM = 1
     STATS = 0
